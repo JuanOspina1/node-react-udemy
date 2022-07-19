@@ -1,30 +1,17 @@
 const express = require("express");
-const passport = require("passport");
-const GoogleStrategy = require("passport-google-oauth20").Strategy;
-const keys = require("./config/keys.js");
+const mongoose = require("mongoose");
+const keys = require("./config/keys");
+// Must call model before passport
+require("./models/User");
+// The below ensures execution, nothing needs to be imported from passport
+require("./services/passport");
+
+mongoose.connect(keys.mongoURI);
 
 const app = express();
 
-// creates a new instance of the strategy
-passport.use(
-  new GoogleStrategy(
-    {
-      clientID: keys.googleClientID,
-      clientSecret: keys.googleClientSecret,
-      callbackURL: "/auth/google/callback",
-    },
-    (accessToken) => {
-      console.log(accessToken);
-    }
-  )
-);
-
-app.get(
-  "/auth/google",
-  passport.authenticate("google", {
-    scope: ["profile", "email"],
-  })
-);
+//Returns a function then immediately call the function
+require("./routes/authRoutes")(app);
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT);
