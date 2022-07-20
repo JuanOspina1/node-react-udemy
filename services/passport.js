@@ -6,6 +6,10 @@ const keys = require("../config/keys.js");
 // Single argument fetches from Mongo
 const User = mongoose.model("users");
 
+passport.serializeUser((user, done) => {
+  done(null, user.id);
+});
+
 // We are not exporting anything from this file - we just need to ensure execution
 passport.use(
   new GoogleStrategy(
@@ -15,9 +19,18 @@ passport.use(
       callbackURL: "/auth/google/callback",
     },
     (accessToken, refreshToken, profile, done) => {
-      new User({
-        googleId: profile.id,
-      }).save();
+      User.findOne({ googleId: profile.id }).then((existingUser) => {
+        if (existingUser) {
+          // null for success
+          done(null, existingUser);
+        } else {
+          new User({
+            googleId: profile.id,
+          })
+            .save()
+            .then((user) => done(null, user));
+        }
+      });
     }
   )
 );
