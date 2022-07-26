@@ -10,6 +10,13 @@ passport.serializeUser((user, done) => {
   done(null, user.id);
 });
 
+passport.deserializeUser((id, done) => {
+  // Searching Mongo
+  User.findById(id).then((user) => {
+    done(null, user);
+  });
+});
+
 // We are not exporting anything from this file - we just need to ensure execution
 passport.use(
   new GoogleStrategy(
